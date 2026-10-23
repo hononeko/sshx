@@ -19,6 +19,7 @@ import (
 	"github.com/charmbracelet/x/term"
 	"github.com/vehkiya/sshx/internal/completion"
 	"github.com/vehkiya/sshx/internal/probe"
+	"github.com/vehkiya/sshx/internal/recent"
 	"github.com/vehkiya/sshx/internal/sshconfig"
 	"github.com/vehkiya/sshx/internal/tui"
 	"github.com/vehkiya/sshx/internal/ui"
@@ -31,7 +32,7 @@ var subcommands = map[string]bool{
 	"add": true, "ls": true, "list": true, "rm": true, "delete": true, "remove": true,
 	"clone": true, "dup": true, "duplicate": true, "probe": true, "ping": true,
 	"update": true, "upgrade": true, "check-update": true, "edit": true, "connect": true,
-	"completion": true,
+	"completion": true, "help": true,
 }
 
 func main() {
@@ -106,7 +107,7 @@ func run(args []string, homeDir string) int {
 			return 1
 		}
 		if connectNow && connectTarget != "" {
-			return connectSSH(connectTarget)
+			return connectSSH(homeDir, connectTarget)
 		}
 		return 0
 
@@ -177,7 +178,7 @@ func run(args []string, homeDir string) int {
 			fmt.Fprintln(os.Stderr, "Usage: sshx connect <alias|target> [command...]")
 			return 2
 		}
-		return connectSSH(args[1], args[2:]...)
+		return connectSSH(homeDir, args[1], args[2:]...)
 	}
 
 	if strings.HasPrefix(cmd, "-") {
@@ -187,12 +188,12 @@ func run(args []string, homeDir string) int {
 
 	hosts, _ := sshconfig.LoadAllHosts(homeDir)
 	if h, ok := sshconfig.FindHost(hosts, args[0]); ok {
-		return connectSSH(h.Alias, args[1:]...)
+		return connectSSH(homeDir, h.Alias, args[1:]...)
 	}
 	// Anything that looks like a target (user@host, an FQDN or IP) goes straight to ssh,
 	// which may still match it against Host patterns.
 	if strings.ContainsAny(args[0], "@.:") {
-		return connectSSH(args[0], args[1:]...)
+		return connectSSH(homeDir, args[0], args[1:]...)
 	}
 
 	fmt.Fprintf(os.Stderr, "sshx: unknown command or host alias %q\nRun 'sshx ls' to list hosts, or 'sshx connect %s' to pass it to ssh as-is.\n", args[0], args[0])
@@ -215,7 +216,7 @@ func runTUILoop(homeDir string) int {
 		switch action {
 		case "connect":
 			if choice != "" {
-				return connectSSH(choice)
+				return connectSSH(homeDir, choice)
 			}
 			return 0
 
@@ -528,7 +529,8 @@ func writeHostTable(w io.Writer, hosts []sshconfig.HostItem) {
 }
 
 // connectSSH runs ssh against target, forwarding any remote command, and returns ssh's exit code.
-func connectSSH(target string, command ...string) int {
+func connectSSH(homeDir, target string, command ...string) int {
+	rememberConnection(homeDir, target)
 	if len(command) == 0 {
 		fmt.Fprintf(os.Stderr, "Connecting to %s...\n\n", target)
 	}
@@ -548,6 +550,19 @@ func connectSSH(target string, command ...string) int {
 		return 1
 	}
 	return 0
+}
+
+// rememberConnection notes when a configured host is connected to, so
+// completion can offer it first. It never stops the connection.
+func rememberConnection(homeDir, target string) {
+	hosts, _ := sshconfig.LoadAllHosts(homeDir)
+	h, ok := sshconfig.FindHost(hosts, target)
+	if !ok {
+		return
+	}
+	if path, err := recent.Path(); err == nil {
+		_ = recent.Record(path, h.Alias, time.Now())
+	}
 }
 
 // openEditor opens ~/.ssh/config in $VISUAL or $EDITOR. On Unix the editor

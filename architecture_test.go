@@ -19,11 +19,12 @@ const module = "github.com/vehkiya/sshx"
 // nothing imports main, tui and wizard don't import each other, and each layer
 // only knows the ones below it. AGENTS.md §2.0 explains the layout; change both together.
 var layers = map[string][]string{
-	".":          {"completion", "probe", "sshconfig", "tui", "ui", "update", "wizard"},
+	".":          {"completion", "probe", "recent", "sshconfig", "tui", "ui", "update", "wizard"},
 	"tui":        {"probe", "sshconfig", "ui", "update"},
 	"wizard":     {"sshconfig", "ui"},
-	"completion": {"sshconfig"},
+	"completion": {"recent", "sshconfig"},
 	"probe":      {"sshconfig"},
+	"recent":     {"sshconfig"},
 	"update":     {"sshconfig"},
 
 	// Leaves with zero internal dependencies

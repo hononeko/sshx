@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/vehkiya/sshx/internal/recent"
 	"github.com/vehkiya/sshx/internal/sshconfig"
 )
 
@@ -48,6 +49,7 @@ var commands = []command{
 	{names: []string{"update", "upgrade"}, description: "Install the latest release", args: []string{"--check", "--force"}},
 	{names: []string{"check-update"}, description: "Check for a newer release"},
 	{names: []string{"completion"}, description: "Print a shell completion script", args: Shells},
+	{names: []string{"help"}, description: "Show all commands"},
 }
 
 // Commands returns every word that invokes a subcommand, aliases included.
@@ -59,16 +61,28 @@ func Commands() []string {
 	return names
 }
 
-// Candidates returns the completions for the next argument after words, the
-// arguments already typed (without the program name). The shell narrows them
-// down to the word being typed.
+// Candidates returns the completions for the word being typed, the last of
+// words: the arguments after the program name (an empty last word when
+// nothing is typed yet). The shell narrows them down to that word. For the
+// first argument they are hosts, most recently connected to first; a
+// subcommand is offered only once its name is being typed, so sshx <Tab>
+// lists just hosts.
 func Candidates(words []string, homeDir string) []Candidate {
+	cur := ""
+	if len(words) > 0 {
+		cur, words = words[len(words)-1], words[:len(words)-1]
+	}
 	if len(words) == 0 {
-		var out []Candidate
-		for _, c := range commands {
-			out = append(out, Candidate{c.names[0], c.description})
+		out := hostCandidates(homeDir)
+		if cur == "" {
+			return out
 		}
-		return append(out, hostCandidates(homeDir)...)
+		for _, c := range commands {
+			if strings.HasPrefix(c.names[0], strings.ToLower(cur)) {
+				out = append(out, Candidate{c.names[0], c.description})
+			}
+		}
+		return out
 	}
 
 	c, ok := lookup(words[0])
@@ -109,12 +123,19 @@ func lookup(word string) (command, bool) {
 	return command{}, false
 }
 
+// recentPath locates the connection times hosts are ordered by; tests replace it.
+var recentPath = recent.Path
+
 // hostCandidates returns every concrete alias of every configured host, each
-// described by where it connects.
+// described by where it connects: the hosts sshx connected to most recently
+// first, then the rest alphabetically.
 func hostCandidates(homeDir string) []Candidate {
 	hosts, err := sshconfig.LoadAllHosts(homeDir)
 	if err != nil {
 		return nil
+	}
+	if path, err := recentPath(); err == nil {
+		recent.Sort(hosts, recent.Load(path))
 	}
 	seen := make(map[string]bool)
 	var out []Candidate
@@ -144,15 +165,19 @@ func Script(shell string) (string, error) {
 	return "", fmt.Errorf("unsupported shell %q (want one of: %s)", shell, strings.Join(Shells, ", "))
 }
 
+// The scripts pass sshx the words after its name, the word being typed last,
+// and ask the shell to keep the order of what comes back where it can:
+// bash 4.4+ (nosort), zsh (-V) and fish (-k). Shells or plugins that sort
+// anyway list hosts alphabetically.
 const bashScript = `# sshx bash completion. Load it with: source <(sshx completion bash)
 _sshx() {
     local cur=${COMP_WORDS[COMP_CWORD]}
     local IFS=$'\n'
     local candidates
-    candidates=$(sshx ` + HiddenCommand + ` "${COMP_WORDS[@]:1:COMP_CWORD-1}" 2>/dev/null | cut -f1)
+    candidates=$(sshx ` + HiddenCommand + ` "${COMP_WORDS[@]:1:COMP_CWORD}" 2>/dev/null | cut -f1)
     COMPREPLY=($(compgen -W "$candidates" -- "$cur"))
 }
-complete -F _sshx sshx
+complete -o nosort -F _sshx sshx 2>/dev/null || complete -F _sshx sshx
 `
 
 const zshScript = `#compdef sshx
@@ -161,14 +186,14 @@ const zshScript = `#compdef sshx
 _sshx() {
     local -a described
     local line name desc
-    for line in "${(@f)$(sshx ` + HiddenCommand + ` "${(@)words[2,CURRENT-1]}" 2>/dev/null)}"; do
+    for line in "${(@f)$(sshx ` + HiddenCommand + ` "${(@)words[2,CURRENT]}" 2>/dev/null)}"; do
         [[ -n $line ]] || continue
         name=${line%%$'\t'*}
         desc=
         [[ $line == *$'\t'* ]] && desc=${line#*$'\t'}
         described+=("${name//:/\\:}:$desc")
     done
-    _describe -t sshx 'sshx' described
+    _describe -V -t sshx 'sshx' described
 }
 if [[ $funcstack[1] == _sshx ]]; then
     _sshx "$@"
@@ -179,8 +204,9 @@ fi
 
 const fishScript = `# sshx fish completion. Load it with: sshx completion fish | source
 function __sshx_complete
-    set -l tokens (commandline -opc)
-    sshx ` + HiddenCommand + ` $tokens[2..-1] 2>/dev/null
+    set -l args (commandline -opc)
+    set -e args[1]
+    sshx ` + HiddenCommand + ` $args (commandline -ct) 2>/dev/null
 end
-complete -c sshx -f -a '(__sshx_complete)'
+complete -c sshx -f -k -a '(__sshx_complete)'
 `
