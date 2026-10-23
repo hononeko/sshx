@@ -5,6 +5,9 @@ import (
 	"path/filepath"
 	"slices"
 	"testing"
+	"time"
+
+	"github.com/vehkiya/sshx/internal/recent"
 )
 
 func writeConfig(t *testing.T, content string) string {
@@ -17,7 +20,16 @@ func writeConfig(t *testing.T, content string) string {
 	if err := os.WriteFile(filepath.Join(sshDir, "config"), []byte(content), 0600); err != nil {
 		t.Fatal(err)
 	}
+	useRecent(t, filepath.Join(home, "recent.json"))
 	return home
+}
+
+// useRecent points completion at path for connection times, never the user's own.
+func useRecent(t *testing.T, path string) {
+	t.Helper()
+	old := recentPath
+	recentPath = func() (string, error) { return path, nil }
+	t.Cleanup(func() { recentPath = old })
 }
 
 func values(cs []Candidate) []string {
@@ -51,19 +63,26 @@ func TestCandidates(t *testing.T) {
 		words []string
 		want  []string
 	}{
-		{[]string{"rm"}, hosts},
-		{[]string{"EDIT"}, hosts},
-		{[]string{"connect"}, hosts},
-		{[]string{"rm", "web"}, nil},
-		{[]string{"web"}, nil},
-		{[]string{"web", "uptime"}, nil},
-		{[]string{"add"}, nil},
-		{[]string{"completion"}, Shells},
-		{[]string{"completion", "zsh"}, nil},
-		{[]string{"ls"}, []string{"--json"}},
-		{[]string{"ls", "--json"}, nil},
-		{[]string{"update"}, []string{"--check", "--force"}},
-		{[]string{"upgrade", "--force"}, []string{"--check"}},
+		{nil, hosts},
+		{[]string{""}, hosts},
+		{[]string{"w"}, hosts},
+		{[]string{"e"}, append(hosts, "edit")},
+		{[]string{"he"}, append(hosts, "help")},
+		{[]string{"help", ""}, nil},
+		{[]string{"C"}, append(hosts, "clone", "connect", "check-update", "completion")},
+		{[]string{"rm", ""}, hosts},
+		{[]string{"EDIT", "w"}, hosts},
+		{[]string{"connect", ""}, hosts},
+		{[]string{"rm", "web", ""}, nil},
+		{[]string{"web", ""}, nil},
+		{[]string{"web", "uptime", ""}, nil},
+		{[]string{"add", ""}, nil},
+		{[]string{"completion", ""}, Shells},
+		{[]string{"completion", "zsh", ""}, nil},
+		{[]string{"ls", "-"}, []string{"--json"}},
+		{[]string{"ls", "--json", ""}, nil},
+		{[]string{"update", ""}, []string{"--check", "--force"}},
+		{[]string{"upgrade", "--force", ""}, []string{"--check"}},
 	}
 	for _, tt := range tests {
 		if got := values(Candidates(tt.words, home)); !slices.Equal(got, tt.want) {
@@ -72,18 +91,13 @@ func TestCandidates(t *testing.T) {
 	}
 }
 
-func TestCandidatesFirstWord(t *testing.T) {
+func TestCandidatesHosts(t *testing.T) {
 	home := writeConfig(t, config)
-	got := Candidates(nil, home)
+	got := Candidates([]string{""}, home)
 	vals := values(got)
-	for _, want := range []string{"add", "ls", "rm", "completion", "db", "web", "web.lan"} {
-		if !slices.Contains(vals, want) {
-			t.Errorf("first-word candidates %q lack %q", vals, want)
-		}
-	}
-	for _, unwanted := range []string{"*", "!bad", "WEB", "list", HiddenCommand} {
+	for _, unwanted := range []string{"*", "!bad", "WEB", "add", "list", HiddenCommand} {
 		if slices.Contains(vals, unwanted) {
-			t.Errorf("first-word candidates %q include %q", vals, unwanted)
+			t.Errorf("sshx <Tab> candidates %q include %q", vals, unwanted)
 		}
 	}
 	for _, c := range got {
@@ -93,8 +107,30 @@ func TestCandidatesFirstWord(t *testing.T) {
 	}
 }
 
+func TestCandidatesRecentFirst(t *testing.T) {
+	home := writeConfig(t, config)
+	path, _ := recentPath()
+	now := time.Now()
+	if err := recent.Record(path, "web", now.Add(-time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if err := recent.Record(path, "db", now); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := values(Candidates([]string{""}, home)), []string{"db", "web", "web.lan"}; !slices.Equal(got, want) {
+		t.Errorf("after connecting to db: %q, want %q", got, want)
+	}
+	if err := recent.Record(path, "web", now.Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := values(Candidates([]string{"rm", ""}, home)), []string{"web", "web.lan", "db"}; !slices.Equal(got, want) {
+		t.Errorf("after connecting to web: %q, want %q", got, want)
+	}
+}
+
 func TestCandidatesWithoutConfig(t *testing.T) {
-	if got := Candidates([]string{"rm"}, t.TempDir()); len(got) != 0 {
+	useRecent(t, filepath.Join(t.TempDir(), "recent.json"))
+	if got := Candidates([]string{"rm", ""}, t.TempDir()); len(got) != 0 {
 		t.Errorf("Candidates without a config = %q, want none", values(got))
 	}
 }

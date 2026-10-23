@@ -40,7 +40,7 @@ It provides an intuitive dual-pane terminal interface to search, inspect, connec
   * Connect directly by alias: `sshx <alias>`, or run a remote command: `sshx <alias> uptime`. ssh's exit code is passed through.
   * Non-interactive target parsing: `sshx add user@192.168.1.100:2222 prod-server` or with multiple aliases `sshx add 192.168.1.100 host1 host2`.
   * Support for multiple hostnames & IP on the same connection, so `ssh hostname1`, `ssh hostname2`, and `ssh <IP>` all share the same credentials.
-  * Shell tab completion for bash, zsh and fish: `sshx <Tab>` completes host aliases and subcommands, and `sshx rm`/`edit`/`clone`/`probe`/`connect <Tab>` complete aliases.
+  * Shell tab completion for bash, zsh and fish: `sshx <Tab>` completes host aliases, most recently used first; subcommands complete by name, and `sshx rm`/`edit`/`clone`/`probe`/`connect <Tab>` complete aliases.
   * Zero external runtime dependencies — single static binary.
 
 ---
@@ -209,6 +209,14 @@ sshx --version
 ### Shell Completion
 
 `sshx completion <shell>` prints a completion script. Hosts are read from your SSH config each time you press <kbd>Tab</kbd>, so new hosts complete straight away. zsh and fish show each host's target beside its alias.
+
+`sshx <Tab>` lists only hosts; a subcommand completes once you start typing its name (`sshx ed<Tab>` → `edit`). Hosts come in the order you last connected to them through sshx, then the rest alphabetically, wherever the shell keeps that order: bash 4.4+, fish, and zsh's plain menu when no two aliases share a target. Elsewhere the shell sorts them. Connection times are kept in `recent.json` in your user cache directory (e.g. `~/.cache/sshx/`); connections made with plain `ssh` aren't seen.
+
+With [fzf-tab](https://github.com/Aloxaf/fzf-tab), which sorts candidates itself, opt in to the recent-first order in `~/.zshrc`:
+
+```zsh
+zstyle ':completion:*:sshx:*' sort false
+```
 
 ```bash
 # bash (~/.bashrc)
