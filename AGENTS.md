@@ -45,9 +45,10 @@ Before committing or submitting changes, all of the following steps **MUST** pas
 ### 2.0 Package Layout & Dependency Direction
 * Code lives in packages under `internal/`; `main.go` holds only argument parsing and dispatch.
 * Dependencies point one way, from `main` down to the leaves, and `TestDependenciesPointOneWay` (`architecture_test.go`) checks them in CI. When you add a package or an import across packages, update its `layers` map in the same change:
-  * `.` (`main`) → `probe`, `sshconfig`, `tui`, `ui`, `update`, `wizard`.
+  * `.` (`main`) → `completion`, `probe`, `sshconfig`, `tui`, `ui`, `update`, `wizard`.
   * `tui` → `probe`, `sshconfig`, `ui`, `update`.
   * `wizard` → `sshconfig`, `ui`.
+  * `completion` → `sshconfig`.
   * `probe` → `sshconfig`.
   * `update` → `sshconfig`.
   * `sshconfig` and `ui` are leaves with zero internal dependencies.

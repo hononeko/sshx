@@ -17,6 +17,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/term"
+	"github.com/vehkiya/sshx/internal/completion"
 	"github.com/vehkiya/sshx/internal/probe"
 	"github.com/vehkiya/sshx/internal/sshconfig"
 	"github.com/vehkiya/sshx/internal/tui"
@@ -30,6 +31,7 @@ var subcommands = map[string]bool{
 	"add": true, "ls": true, "list": true, "rm": true, "delete": true, "remove": true,
 	"clone": true, "dup": true, "duplicate": true, "probe": true, "ping": true,
 	"update": true, "upgrade": true, "check-update": true, "edit": true, "connect": true,
+	"completion": true,
 }
 
 func main() {
@@ -76,6 +78,11 @@ func run(args []string, homeDir string) int {
 		return 0
 	case "-h", "--help", "help":
 		printUsage()
+		return 0
+	case completion.HiddenCommand:
+		for _, c := range completion.Candidates(args[1:], homeDir) {
+			fmt.Println(c)
+		}
 		return 0
 	}
 	if subcommands[cmd] && len(args) > 1 && (args[1] == "-h" || args[1] == "--help") {
@@ -150,6 +157,19 @@ func run(args []string, homeDir string) int {
 			return 0
 		}
 		openEditor(homeDir)
+		return 0
+
+	case "completion":
+		if len(args) != 2 {
+			fmt.Fprintln(os.Stderr, "Usage: "+completionUsage)
+			return 2
+		}
+		script, err := completion.Script(args[1])
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\nUsage: %s\n", err, completionUsage)
+			return 2
+		}
+		fmt.Print(script)
 		return 0
 
 	case "connect":
@@ -276,6 +296,8 @@ func pausePrompt() {
 	_, _ = reader.ReadString('\n')
 }
 
+const completionUsage = "sshx completion <bash|zsh|fish>"
+
 const updateUsage = "sshx update [--check] [--force]"
 
 func cmdUpdate(args []string) int {
@@ -349,6 +371,7 @@ func printUsage() {
 	fmt.Println("  sshx clone <alias>            Duplicate / clone an existing host")
 	fmt.Println("  sshx probe <alias>            Probe TCP reachability / ping host")
 	fmt.Println("  sshx update [--check]         Check for and install latest release update")
+	fmt.Println("  sshx completion <shell>       Print tab completion for bash, zsh or fish")
 	fmt.Println()
 	fmt.Println("TUI Keybindings:")
 	fmt.Println("  Enter      Connect to selected host")

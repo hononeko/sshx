@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/vehkiya/sshx/internal/completion"
 	"github.com/vehkiya/sshx/internal/sshconfig"
 	"github.com/vehkiya/sshx/internal/wizard"
 )
@@ -258,5 +259,28 @@ func TestAddCLIWithMultipleAliases(t *testing.T) {
 		if !slices.Contains(h.AllAliases, expected) {
 			t.Errorf("expected %q in AllAliases %v", expected, h.AllAliases)
 		}
+	}
+}
+
+func TestCompletionKnowsEverySubcommand(t *testing.T) {
+	names := completion.Commands()
+	for _, n := range names {
+		if !subcommands[n] {
+			t.Errorf("completion offers %q, which isn't in subcommands", n)
+		}
+	}
+	for n := range subcommands {
+		if !slices.Contains(names, n) {
+			t.Errorf("subcommand %q isn't offered by completion", n)
+		}
+	}
+}
+
+func TestCompletionUsage(t *testing.T) {
+	if code := run([]string{"completion"}, t.TempDir()); code != 2 {
+		t.Errorf("completion without a shell: exit %d, want 2", code)
+	}
+	if code := run([]string{"completion", "tcsh"}, t.TempDir()); code != 2 {
+		t.Errorf("completion for an unknown shell: exit %d, want 2", code)
 	}
 }
