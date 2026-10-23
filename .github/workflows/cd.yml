@@ -28,7 +28,7 @@ jobs:
   plan:
     name: Plan Release
     needs: validate
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     outputs:
@@ -89,7 +89,7 @@ jobs:
     name: Build & Publish Release
     needs: plan
     if: needs.plan.outputs.release == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     # SSHX_SIGNING_KEY lives in this environment, which only the main branch can deploy to.
     environment: release
     permissions:
