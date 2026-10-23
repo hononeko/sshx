@@ -40,6 +40,7 @@ It provides an intuitive dual-pane terminal interface to search, inspect, connec
   * Connect directly by alias: `sshx <alias>`, or run a remote command: `sshx <alias> uptime`. ssh's exit code is passed through.
   * Non-interactive target parsing: `sshx add user@192.168.1.100:2222 prod-server` or with multiple aliases `sshx add 192.168.1.100 host1 host2`.
   * Support for multiple hostnames & IP on the same connection, so `ssh hostname1`, `ssh hostname2`, and `ssh <IP>` all share the same credentials.
+  * Shell tab completion for bash, zsh and fish: `sshx <Tab>` completes host aliases and subcommands, and `sshx rm`/`edit`/`clone`/`probe`/`connect <Tab>` complete aliases.
   * Zero external runtime dependencies — single static binary.
 
 ---
@@ -198,8 +199,26 @@ sshx rm prod-server
 # Open ~/.ssh/config in $VISUAL / $EDITOR (falls back to nvim, vim, vi, nano)
 sshx edit
 
+# Print a tab completion script for bash, zsh or fish
+sshx completion zsh
+
 # View version info
 sshx --version
+```
+
+### Shell Completion
+
+`sshx completion <shell>` prints a completion script. Hosts are read from your SSH config each time you press <kbd>Tab</kbd>, so new hosts complete straight away. zsh and fish show each host's target beside its alias.
+
+```bash
+# bash (~/.bashrc)
+source <(sshx completion bash)
+
+# zsh (~/.zshrc, after compinit)
+source <(sshx completion zsh)
+
+# fish (~/.config/fish/config.fish)
+sshx completion fish | source
 ```
 
 ### Accessibility (`ACCESSIBLE=1`)
