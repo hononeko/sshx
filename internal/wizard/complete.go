@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/huh/v2"
@@ -110,24 +111,44 @@ func isDir(path string) bool {
 // completion is an input that completes paths: where its text is, and what
 // it suggests for that text.
 type completion struct {
-	value   *string
+	value   *lockedString
 	suggest func(typed string) []string
+}
+
+// lockedString is an input's value, shared with the suggestion commands Huh
+// runs on other goroutines.
+type lockedString struct {
+	mu sync.Mutex
+	p  *string
+}
+
+func (s *lockedString) Get() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return *s.p
+}
+
+func (s *lockedString) Set(v string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	*s.p = v
 }
 
 // completePaths makes a wizard input complete paths as they're typed, shown
 // as ghost text that Tab accepts (completeOnTab), as in a shell. Accessible
 // prompts stay plain.
-func (w *hostWizard) completePaths(in *huh.Input, value *string, c pathCompleter) *huh.Input {
+func (w *hostWizard) completePaths(in *huh.Input, value *string, suggest func(typed string) []string) *huh.Input {
 	if accessible() {
 		return in
 	}
 	if w.completions == nil {
 		w.completions = map[string]completion{}
 	}
-	w.completions[in.GetKey()] = completion{value, c.suggest}
+	locked := &lockedString{p: value}
+	w.completions[in.GetKey()] = completion{locked, suggest}
 	// Huh runs the func again whenever the binding changes; it follows the
 	// pointer, so every keystroke counts.
-	return in.SuggestionsFunc(func() []string { return c.suggest(*value) }, value)
+	return in.Accessor(locked).SuggestionsFunc(func() []string { return suggest(locked.Get()) }, value)
 }
 
 // acceptSuggestion is the key Huh accepts a suggestion with.
@@ -149,7 +170,7 @@ func (w *hostWizard) completeOnTab(msg tea.Msg) tea.Msg {
 	if !ok {
 		return msg
 	}
-	typed := *c.value
+	typed := c.value.Get()
 	for _, s := range c.suggest(typed) {
 		if len(s) > len(typed) && strings.HasPrefix(strings.ToLower(s), strings.ToLower(typed)) {
 			return acceptSuggestion
