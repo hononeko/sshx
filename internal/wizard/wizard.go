@@ -529,7 +529,7 @@ func (w *hostWizard) wizardSteps(theme huh.Theme) []wizardStep {
 		Placeholder("~/.ssh/id_custom").
 		Value(&w.customKey).
 		Validate(forward(w, keepIfEmpty(prevCustomKey, w.checkKeyFile))),
-		&w.customKey, newPathCompleter(w.homeDir, true))
+		&w.customKey, newPathCompleter(w.homeDir, true).suggest)
 	// The default path follows the alias, even after going back to change
 	// it; the placeholder is bound to the alias alone.
 	newKeyInput := w.completePaths(huh.NewInput().Key("new-key").
@@ -538,7 +538,7 @@ func (w *hostWizard) wizardSteps(theme huh.Theme) []wizardStep {
 		PlaceholderFunc(w.defaultNewKey, &w.alias).
 		Value(&w.newKey).
 		Validate(forward(w, validateText)),
-		&w.newKey, newPathCompleter(w.homeDir, false))
+		&w.newKey, newPathCompleter(w.homeDir, false).suggest)
 
 	noKey := func() bool { return w.auth != authKey }
 
