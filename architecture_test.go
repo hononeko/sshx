@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-const module = "github.com/vehkiya/sshx"
+const module = "github.com/hononeko/sshx"
 
 // layers lists, for each package, the internal packages its code may import
 // (tests aside). Dependencies point one way, from main down to the leaves, so

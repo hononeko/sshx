@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vehkiya/sshx/internal/sshconfig"
+	"github.com/hononeko/sshx/internal/sshconfig"
 )
 
 // Address returns the host:port to TCP-probe for h. A host reached

@@ -31,7 +31,7 @@ I aim to acknowledge your report within 48 hours and provide an estimated timeli
 When using `sshx`:
 
 - **Permissions**: `sshx` strictly maintains `0600` permissions on `~/.ssh/config` and uses atomic temporary writes with random suffixes to prevent race conditions and file tampering. The previous version of every file it modifies is kept as a hidden `.<name>.sshx.bak` backup alongside it.
-- **Updates**: `sshx update` refuses to install a binary unless the release's `checksums.txt` carries a valid Ed25519 signature (`checksums.txt.sig`) from a key built into sshx, and the archive's SHA-256 matches that file. Release archives also carry GitHub build provenance attestations; verify a download with `gh attestation verify <archive> --repo vehkiya/sshx`.
+- **Updates**: `sshx update` refuses to install a binary unless the release's `checksums.txt` carries a valid Ed25519 signature (`checksums.txt.sig`) from a key built into sshx, and the archive's SHA-256 matches that file. Release archives also carry GitHub build provenance attestations; verify a download with `gh attestation verify <archive> --repo hononeko/sshx`. Releases up to v0.10.3 were built before the repository moved from `vehkiya`, so their attestations verify with `--owner vehkiya` instead.
 
 ## Release Signing
 

@@ -1,7 +1,7 @@
 # sshx 🚀
 
-[![Release](https://github.com/vehkiya/sshx/actions/workflows/cd.yml/badge.svg)](https://github.com/vehkiya/sshx/actions/workflows/cd.yml)
-[![CodeQL Analysis](https://github.com/vehkiya/sshx/actions/workflows/codeql.yml/badge.svg)](https://github.com/vehkiya/sshx/actions/workflows/codeql.yml)
+[![Release](https://github.com/hononeko/sshx/actions/workflows/cd.yml/badge.svg)](https://github.com/hononeko/sshx/actions/workflows/cd.yml)
+[![CodeQL Analysis](https://github.com/hononeko/sshx/actions/workflows/codeql.yml/badge.svg)](https://github.com/hononeko/sshx/actions/workflows/codeql.yml)
 [![Linted with golangci-lint](https://img.shields.io/badge/linted%20with-golangci--lint-00ADD8?logo=go&logoColor=white)](https://golangci-lint.run)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -50,59 +50,61 @@ It provides an intuitive dual-pane terminal interface to search, inspect, connec
 ### Via `go install` (Recommended)
 
 ```bash
-go install github.com/vehkiya/sshx@latest
+go install github.com/hononeko/sshx@latest
 ```
 
 Ensure `$(go env GOPATH)/bin` (typically `~/go/bin`) is in your `$PATH`.
 
 ### From Precompiled Release Binaries
 
-Download prebuilt binaries for macOS, Linux, or Windows from the [Releases page](https://github.com/vehkiya/sshx/releases).
+Download prebuilt binaries for macOS, Linux, or Windows from the [Releases page](https://github.com/hononeko/sshx/releases).
 
 #### macOS (Apple Silicon / M-series - `arm64`)
 
 ```bash
-curl -sSL https://github.com/vehkiya/sshx/releases/latest/download/sshx_darwin_arm64.tar.gz | tar -xz --strip-components=1
+curl -sSL https://github.com/hononeko/sshx/releases/latest/download/sshx_darwin_arm64.tar.gz | tar -xz --strip-components=1
 sudo mv sshx /usr/local/bin/
 ```
 
 #### macOS (Intel - `amd64`)
 
 ```bash
-curl -sSL https://github.com/vehkiya/sshx/releases/latest/download/sshx_darwin_amd64.tar.gz | tar -xz --strip-components=1
+curl -sSL https://github.com/hononeko/sshx/releases/latest/download/sshx_darwin_amd64.tar.gz | tar -xz --strip-components=1
 sudo mv sshx /usr/local/bin/
 ```
 
 #### Linux (x86_64 / `amd64`)
 
 ```bash
-curl -sSL https://github.com/vehkiya/sshx/releases/latest/download/sshx_linux_amd64.tar.gz | tar -xz --strip-components=1
+curl -sSL https://github.com/hononeko/sshx/releases/latest/download/sshx_linux_amd64.tar.gz | tar -xz --strip-components=1
 sudo mv sshx /usr/local/bin/
 ```
 
 #### Linux (ARM64 / `arm64`)
 
 ```bash
-curl -sSL https://github.com/vehkiya/sshx/releases/latest/download/sshx_linux_arm64.tar.gz | tar -xz --strip-components=1
+curl -sSL https://github.com/hononeko/sshx/releases/latest/download/sshx_linux_arm64.tar.gz | tar -xz --strip-components=1
 sudo mv sshx /usr/local/bin/
 ```
 
 #### Windows
 
-Download `sshx_windows_amd64.zip` from the [Releases page](https://github.com/vehkiya/sshx/releases/latest), extract `sshx.exe`, and place it in your `%PATH%`.
+Download `sshx_windows_amd64.zip` from the [Releases page](https://github.com/hononeko/sshx/releases/latest), extract `sshx.exe`, and place it in your `%PATH%`.
 
 #### Verifying a Download
 
 Release archives carry GitHub build provenance attestations. With the [GitHub CLI](https://cli.github.com):
 
 ```bash
-gh attestation verify sshx_linux_amd64.tar.gz --repo vehkiya/sshx
+gh attestation verify sshx_linux_amd64.tar.gz --repo hononeko/sshx
 ```
+
+Releases up to v0.10.3 were built before the repository moved from `vehkiya`; verify those with `--owner vehkiya` instead of `--repo`.
 
 ### Build from Source
 
 ```bash
-git clone https://github.com/vehkiya/sshx.git
+git clone https://github.com/hononeko/sshx.git
 cd sshx
 go build -trimpath -ldflags="-s -w" -o sshx .
 sudo mv sshx /usr/local/bin/

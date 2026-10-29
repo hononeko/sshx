@@ -25,11 +25,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vehkiya/sshx/internal/sshconfig"
+	"github.com/hononeko/sshx/internal/sshconfig"
 )
 
 const (
-	repo           = "vehkiya/sshx"
+	repo           = "hononeko/sshx"
 	checksumsAsset = "checksums.txt"
 	signatureAsset = "checksums.txt.sig"
 	cacheTTL       = 6 * time.Hour

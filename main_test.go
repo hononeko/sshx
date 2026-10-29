@@ -11,9 +11,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vehkiya/sshx/internal/completion"
-	"github.com/vehkiya/sshx/internal/sshconfig"
-	"github.com/vehkiya/sshx/internal/wizard"
+	"github.com/hononeko/sshx/internal/completion"
+	"github.com/hononeko/sshx/internal/sshconfig"
+	"github.com/hononeko/sshx/internal/wizard"
 )
 
 func TestWriteHostTableAlignment(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vehkiya/sshx/internal/sshconfig"
+	"github.com/hononeko/sshx/internal/sshconfig"
 )
 
 func TestRecordAndLoad(t *testing.T) {

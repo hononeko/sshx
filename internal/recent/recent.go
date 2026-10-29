@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vehkiya/sshx/internal/sshconfig"
+	"github.com/hononeko/sshx/internal/sshconfig"
 )
 
 // maxEntries bounds the file, dropping the hosts used longest ago.

@@ -9,7 +9,7 @@ var (
 	BuildDate = "unknown"
 )
 
-// Builds without -ldflags, such as `go install github.com/vehkiya/sshx@latest`,
+// Builds without -ldflags, such as `go install github.com/hononeko/sshx@latest`,
 // take their version and VCS details from the module build info instead.
 func init() {
 	info, ok := debug.ReadBuildInfo()

@@ -3,7 +3,7 @@ package probe
 import (
 	"testing"
 
-	"github.com/vehkiya/sshx/internal/sshconfig"
+	"github.com/hononeko/sshx/internal/sshconfig"
 )
 
 func TestProbeAddress(t *testing.T) {

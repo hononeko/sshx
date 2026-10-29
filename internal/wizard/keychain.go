@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"charm.land/lipgloss/v2"
-	"github.com/vehkiya/sshx/internal/sshconfig"
-	"github.com/vehkiya/sshx/internal/ui"
+	"github.com/hononeko/sshx/internal/sshconfig"
+	"github.com/hononeko/sshx/internal/ui"
 )
 
 // localTimeout bounds the ssh and ssh-keygen calls that only read local

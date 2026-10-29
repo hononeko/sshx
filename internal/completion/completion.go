@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/vehkiya/sshx/internal/recent"
-	"github.com/vehkiya/sshx/internal/sshconfig"
+	"github.com/hononeko/sshx/internal/recent"
+	"github.com/hononeko/sshx/internal/sshconfig"
 )
 
 // HiddenCommand is the subcommand the shell scripts call to get candidates.

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vehkiya/sshx/internal/sshconfig"
+	"github.com/hononeko/sshx/internal/sshconfig"
 )
 
 func TestBuildEntryUnchangedFormIsNoOp(t *testing.T) {

@@ -1,4 +1,4 @@
-module github.com/vehkiya/sshx
+module github.com/hononeko/sshx
 
 go 1.27.3
 

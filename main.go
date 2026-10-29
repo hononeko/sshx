@@ -17,14 +17,14 @@ import (
 
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/term"
-	"github.com/vehkiya/sshx/internal/completion"
-	"github.com/vehkiya/sshx/internal/probe"
-	"github.com/vehkiya/sshx/internal/recent"
-	"github.com/vehkiya/sshx/internal/sshconfig"
-	"github.com/vehkiya/sshx/internal/tui"
-	"github.com/vehkiya/sshx/internal/ui"
-	"github.com/vehkiya/sshx/internal/update"
-	"github.com/vehkiya/sshx/internal/wizard"
+	"github.com/hononeko/sshx/internal/completion"
+	"github.com/hononeko/sshx/internal/probe"
+	"github.com/hononeko/sshx/internal/recent"
+	"github.com/hononeko/sshx/internal/sshconfig"
+	"github.com/hononeko/sshx/internal/tui"
+	"github.com/hononeko/sshx/internal/ui"
+	"github.com/hononeko/sshx/internal/update"
+	"github.com/hononeko/sshx/internal/wizard"
 )
 
 // subcommands are the CLI verbs; any other first argument is treated as a host to connect to.

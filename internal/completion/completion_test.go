@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vehkiya/sshx/internal/recent"
+	"github.com/hononeko/sshx/internal/recent"
 )
 
 func writeConfig(t *testing.T, content string) string {

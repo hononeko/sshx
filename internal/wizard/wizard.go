@@ -22,8 +22,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/huh/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/vehkiya/sshx/internal/sshconfig"
-	"github.com/vehkiya/sshx/internal/ui"
+	"github.com/hononeko/sshx/internal/sshconfig"
+	"github.com/hononeko/sshx/internal/ui"
 )
 
 type (
